@@ -60,24 +60,37 @@
 //   res.render('checkbox', { selectedOptions });
 // });
 // app.get('/drink', (req, res) => {
-//     res.render('drink', { drinks: drinksData });
+//     res.render('drink', { drinks: drinksData, desserts: dessertsData });
 //   });
   
 //   app.post('/order', (req, res) => {
-//     // Process the form submission here and compute the total
 //     const selectedDrinks = req.body.selectedDrinks || [];
-//     let total = 0;
+//     const selectedDesserts = req.body.selectedDesserts || [];
+//     let totalDrinks = 0;
+//     let totalDesserts = 0;
   
 //     selectedDrinks.forEach(drink => {
-//       total += drinksData[drink];
+//       totalDrinks += drinksData[drink];
 //     });
   
-//     res.render('order.ejs', { selectedDrinks, total });
+//     selectedDesserts.forEach(dessert => {
+//       totalDesserts += dessertsData[dessert];
+//     });
+  
+//     const total = totalDrinks + totalDesserts;
+  
+//     res.render('order.ejs', { selectedDrinks, selectedDesserts, total });
 //   });
+  
 //   const drinksData = {
 //     drink1: 1,
 //     drink2: 10,
 //     drink3: 15,
+//   };
+//   const dessertsData = {
+//     dessert1: 5,
+//     dessert2: 8,
+//     dessert3: 12,
 //   };
 // app.listen(port, () => {
 //   console.log(`Server is running on port ${port}`);
