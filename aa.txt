@@ -1,0 +1,175 @@
+mkdir todo-list
+cd todo-list
+npm init -y
+npm install express ejs mysql
+
+
+Set up your app.js file:
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const mysql = require('mysql');
+const app = express();
+
+const database = require('./database');
+
+app.set('view engine', 'ejs');
+app.use(express.static('public'));
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Routes
+app.get('/', (req, res) => {
+  // Retrieve tasks from the database
+  database.query('SELECT * FROM tasks', (error, results) => {
+    if (error) throw error;
+    res.render('index', { tasks: results });
+  });
+});
+
+app.post('/add', (req, res) => {
+  const { task } = req.body;
+  // Insert new task into the database
+  database.query('INSERT INTO tasks (task, completed) VALUES (?, 0)', [task], (error) => {
+    if (error) throw error;
+    res.redirect('/');
+  });
+});
+
+app.post('/update/:id', (req, res) => {
+  const taskId = req.params.id;
+  // Update task completion status in the database
+  database.query('UPDATE tasks SET completed = NOT completed WHERE id = ?', [taskId], (error) => {
+    if (error) throw error;
+    res.redirect('/');
+  });
+});
+
+app.post('/delete/:id', (req, res) => {
+  const taskId = req.params.id;
+  // Delete task from the database
+  database.query('DELETE FROM tasks WHERE id = ?', [taskId], (error) => {
+    if (error) throw error;
+    res.redirect('/');
+  });
+});
+
+// Server setup
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+
+Create your database.js file to handle the MySQL connection:
+
+const mysql = require('mysql');
+
+const database = mysql.createConnection({
+  host: 'localhost',
+  user: 'your_username',
+  password: 'your_password',
+  database: 'your_database',
+});
+
+database.connect((error) => {
+  if (error) throw error;
+  console.log('Connected to the MySQL database');
+});
+
+module.exports = database;
+
+
+
+Create your views/index.ejs file:
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/styles.css">
+  <title>Todo List</title>
+</head>
+<body>
+  <h1>Todo List</h1>
+
+  <form action="/add" method="post">
+    <input type="text" name="task" placeholder="New task" required>
+    <button type="submit">Add Task</button>
+  </form>
+
+  <ul>
+    <% tasks.forEach(task => { %>
+      <li>
+        <form action="/update/<%= task.id %>" method="post" style="display:inline;">
+          <input type="checkbox" <%= task.completed ? 'checked' : '' %> onchange="this.form.submit()">
+        </form>
+        <%= task.task %>
+        <form action="/delete/<%= task.id %>" method="post" style="display:inline;">
+          <button type="submit">Delete</button>
+        </form>
+      </li>
+    <% }); %>
+  </ul>
+</body>
+</html>
+
+
+Create your public/styles.css file for basic styling:
+
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+h1 {
+  color: #333;
+}
+
+form {
+  margin-bottom: 10px;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 5px;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+
+
+CREATE DATABASE your_database;
+
+USE your_database;
+
+CREATE TABLE tasks (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  task VARCHAR(255) NOT NULL,
+  completed BOOLEAN NOT NULL DEFAULT false
+);
+
+
+node app.js
